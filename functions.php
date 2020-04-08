@@ -96,7 +96,7 @@ function startOfTest($data){
                 $openUsedPasssword = fopen('used_passwords.txt', 'a');
                 fwrite($openUsedPasssword, json_encode($input)."\n");
                 $openEmployes = fopen('users.txt', 'a');
-                fwrite($openEmployes, json_encode($data, JSON_UNESCAPED_UNICODE)."\n");
+                fwrite($openEmployes, json_encode($_POST, JSON_UNESCAPED_UNICODE)."\n");
                 fclose($openUsedPasssword);
                 fclose($openEmployes);
                 $checkUsedPassword = true;
@@ -115,36 +115,10 @@ function startOfTest($data){
                 }
             }
         }
-        fclose($openUsedPasssword);
-        if(!$checkUsedPassword){
-            $input = array($data['password']=>date("Y:m:d H:i:s"));
-            $openUsedPasssword = fopen('used_passwords.txt', 'a');
-            fwrite($openUsedPasssword, json_encode($input)."\n");
-            fclose($openUsedPasssword);
-            $openEmployes = fopen('tested_employees.txt', 'a');
-            fwrite($openEmployes, json_encode($data, JSON_UNESCAPED_UNICODE)."\n");
-            fclose($openEmployes);
-            $checkUsedPassword = true;
-        }
     }
     if($checkUsedPassword){
         header('location:?page=test');
     }
-
-/*    $personal_file = translit_my($data['FIO'].'_'.$data['branch'].'_'.$data['subdivision'].'.txt');
-    if(!file_exists($personal_file)){
-        $data['startTime'] = date("Y:m:d H:i:s");
-        file_put_contents(translit_my($personal_file), json_encode($data, JSON_UNESCAPED_UNICODE)."\n");
-        header('location:?page=test');
-    }else{
-        $users = explode("\n", file_get_contents($personal_file));
-        foreach($users as $key=>$value){
-            $value = json_decode($value, true);
-            if(strtotime('+1 minutes',strtotime($value['startTime'])) < strtotime(date("Y:m:d H:i:s"))){
-                return 'Ваше время истекло';
-            }
-        }
-    }*/
 }
 
 //07.04.2020
@@ -175,3 +149,97 @@ function init() {
         }
     }
 }*/
+
+//08.04.2020
+function set_QA()
+{
+    if (!empty($_POST)) {
+        $data = $_POST;
+        $newQuestion = array(
+            'numberOfQuestion' => $data['numberOfQuestion'],
+            'question' => $data['question'],
+            'answer_1' => $data['answer_1'],
+            'answer_2' => $data['answer_2'],
+            'answer_3' => $data['answer_3'],
+            'answer_4' => $data['answer_4'],
+            'rightanswer' => $data['rightanswer']
+        );
+        $wasorno = false;
+        $wasorno_2 = false;
+        $oldlines = array();
+        $newline = array();
+        $q_a = fopen('q_a.txt', 'r');
+        while (!feof($q_a)) {
+            $line = fgets($q_a, 1024);
+            if (!empty($line)) {
+                echo 'было не пусто<br>';
+                $wasorno = true;
+                $oldline = $line;
+                $newline = json_decode($line, true);
+                if ($newline['numberOfQuestion'] == $data['numberOfQuestion']) {
+                    $wasorno_2 = true;
+                    echo 'этот вопрос был раньше<br>';
+                    $newline = json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n";
+                    $oldlines[] = $newline;
+                } else {
+                    echo 'этого вопроса раньше не было<br>';
+                    $oldlines[] = $oldline;
+                }
+            } else {
+                if (!$wasorno) {
+                    echo 'было пусто<br>';
+                    $q_a = fopen('q_a.txt', 'a');
+                    fwrite($q_a, json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n");
+                    fclose($q_a);
+                    break;
+                }
+            }
+        }
+        if ($wasorno) {
+            echo 'после вайла<br>';
+            if (!$wasorno_2) {
+                $verynew = json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n";
+                $q_a = fopen('q_a.txt', 'w');
+                fwrite($q_a, $verynew);
+                foreach ($oldlines as $value) {
+                    $q_a = fopen('q_a.txt', 'a');
+                    fwrite($q_a, $value);
+                }
+            } else {
+                $q_a = fopen('q_a.txt', 'w');
+                fwrite($q_a, $oldlines[0]);
+                $i = 0;
+                foreach ($oldlines as $key => $value) {
+                    if ($i++ == 0) {
+                        continue;
+                    }
+
+                    $q_a = fopen('q_a.txt', 'a');
+                    fwrite($q_a, $value);
+                }
+                fclose($q_a);
+            }
+            //header('location:?page=redact_test');
+            /*        fclose($q_a);
+                    $oldlines[] = $newline;
+                    file_put_contents('q_a.txt', $oldlines);*/
+
+
+            //$oldlines[] = $newline;
+
+
+            /*        echo '<pre>';
+                    print_r($oldlines);
+                    echo '</pre>';*/
+
+
+            /*        foreach($oldlines as $key=>$value){
+                        echo $key;
+                        echo $value;
+                        $q_a = fopen('q_a.txt', 'a');
+                        fwrite($q_a, $value."\n");
+                    }*/
+            //fclose($q_a);
+        }
+    }
+}

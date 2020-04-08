@@ -135,3 +135,23 @@ function translit_my($data){
         }
     }
 }*/
+
+//08.04.2020
+function set_QA() {
+    if(!empty($_POST)){
+        $data = $_POST;
+        $newQuestions = array(
+            $numberOfQuestion = $data['newQuestions'],
+            $question = $data['question'],
+            $answer_1 = $data['answer_1'],
+            $answer_2 = $data['answer_2'],
+            $answer_3 = $data['answer_3'],
+            $answer_4 = $data['answer_4'],
+            $rightanswer = $data['rightanswer']
+        );
+        $q_a = fopen('q_a.txt', 'r');
+        while(!feof($q_a)){
+            $line = fgets($q_a);
+        }
+    }
+}
