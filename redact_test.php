@@ -19,7 +19,7 @@ set_QA();
         <div class="form-check answer">
             <textarea class="form-check-label" name="answer_4" placeholder="Ответ №4"></textarea>
         </div>
-        <input type="text" name="rightanswer" placeholder="Номер вопроса">
+        <input type="text" name="rightanswer" placeholder="Номер правильного ответа">
         <button type="submit" class="btn btn-primary startButton" name="" value="">Записать</button>
     </form>
 

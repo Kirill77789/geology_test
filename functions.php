@@ -155,22 +155,18 @@ function set_QA()
         while (!feof($q_a)) {
             $line = fgets($q_a, 1024);
             if (!empty($line)) {
-                echo 'было не пусто<br>';
                 $wasorno = true;
                 $oldline = $line;
                 $newline = json_decode($line, true);
                 if ($newline['numberOfQuestion'] == $data['numberOfQuestion']) {
                     $wasorno_2 = true;
-                    echo 'этот вопрос был раньше<br>';
                     $newline = json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n";
                     $oldlines[] = $newline;
                 } else {
-                    echo 'этого вопроса раньше не было<br>';
                     $oldlines[] = $oldline;
                 }
             } else {
                 if (!$wasorno) {
-                    echo 'было пусто<br>';
                     $q_a = fopen('q_a.txt', 'a');
                     fwrite($q_a, json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n");
                     fclose($q_a);
@@ -179,7 +175,6 @@ function set_QA()
             }
         }
         if ($wasorno) {
-            echo 'после вайла<br>';
             if (!$wasorno_2) {
                 $verynew = json_encode($newQuestion, JSON_UNESCAPED_UNICODE) . "\n";
                 $q_a = fopen('q_a.txt', 'w');
