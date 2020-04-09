@@ -10,7 +10,7 @@ function formDataValidation($data){
     $data = strip_tags($data);
     $data = htmlspecialchars($data);
     $data = trim($data);
-    $data = strtolower($data);
+    //$data = strtolower($data);
     return $data;
 }
 
@@ -104,7 +104,7 @@ function startOfTest($data){
             }else{
                 $line = json_decode($line, true);
                 if($data['password'] == array_keys($line)[0]){
-                    if((strtotime('+1 minutes', strtotime($line[$data['password']]))) > (strtotime(date("Y:m:d H:i:s")))){
+                    if((strtotime('+30 minutes', strtotime($line[$data['password']]))) > (strtotime(date("Y:m:d H:i:s")))){
                         $checkUsedPassword = true;
                         fclose($openUsedPasssword);
                         break;
@@ -117,7 +117,7 @@ function startOfTest($data){
         }
     }
     if($checkUsedPassword){
-        header('location:?page=test');
+        header('location:?page=test&user='.$data['password']);
     }
 }
 
@@ -132,23 +132,6 @@ function init() {
     include $page.'.php';
     include 'footer.php';
 }
-
-/*function translit_my($data){
-    $data = mb_strtolower($data);
-    $data = strtr($data, array('а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'e','ж'=>'j','з'=>'z','и'=>'i','й'=>'y','к'=>'k','л'=>'l','м'=>'m','н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u','ф'=>'f','х'=>'h','ц'=>'c','ч'=>'ch','ш'=>'sh','щ'=>'shch','ы'=>'y','э'=>'e','ю'=>'yu','я'=>'ya','ъ'=>'','ь'=>''));
-    return $data;
-}*/
-
-/*function record(){
-    if(empty($_POST)){
-
-    }else{
-        $data = $_POST;
-        foreach($data as $key=>$value){
-            $data[$key] = formDataValidation($data[$key]);
-        }
-    }
-}*/
 
 //08.04.2020
 function set_QA()
@@ -219,27 +202,357 @@ function set_QA()
                 }
                 fclose($q_a);
             }
-            //header('location:?page=redact_test');
-            /*        fclose($q_a);
-                    $oldlines[] = $newline;
-                    file_put_contents('q_a.txt', $oldlines);*/
-
-
-            //$oldlines[] = $newline;
-
-
-            /*        echo '<pre>';
-                    print_r($oldlines);
-                    echo '</pre>';*/
-
-
-            /*        foreach($oldlines as $key=>$value){
-                        echo $key;
-                        echo $value;
-                        $q_a = fopen('q_a.txt', 'a');
-                        fwrite($q_a, $value."\n");
-                    }*/
-            //fclose($q_a);
         }
+    }
+}
+//09.04.2020
+function start_time($password){
+    $time = '';
+    $password_1 = formDataValidation($password);
+    $f = fopen('used_passwords.txt' ,'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if(array_keys($line)[0] == $password_1){
+                $time = $line[$password_1];
+            }
+        }else{
+            $time =date("Y:m:d H:i:s");
+            break;
+        }
+    }
+    fclose($f);
+    return $time;
+}
+function end_time($password) {
+    return strtotime('+30 minutes', strtotime(start_time($password)));
+}
+
+function is_time_over($password){
+    $end = end_time($password);
+   if($end > (strtotime(date("Y:m:d H:i:s")))){
+       return true;
+   }else{
+       return false;
+    }
+}
+
+function translit_my($data){
+    $data = mb_strtolower($data);
+    $data = strtr($data, array('а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'e','ж'=>'j','з'=>'z','и'=>'i','й'=>'y','к'=>'k','л'=>'l','м'=>'m','н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u','ф'=>'f','х'=>'h','ц'=>'c','ч'=>'ch','ш'=>'sh','щ'=>'shch','ы'=>'y','э'=>'e','ю'=>'yu','я'=>'ya','ъ'=>'','ь'=>''));
+    return $data;
+}
+
+function current_question($user){
+    $current_question = array();
+    $fio = '';
+    $branch = '';
+    $pos = '';
+    $subdivision = '';
+    $f1 = fopen('users.txt', 'r');
+    while(!feof($f1)){
+        $line = fgets($f1, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['password'] == $user){
+                $fio = $line['FIO'];
+                $branch = $line['branch'];
+                $pos = $line['position'];
+                $subdivision = $line['subdivision'];
+            }
+        }else{
+            break;
+        }
+    }
+    fclose($f1);
+    $wasorno_3 = true;
+    $f2 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'a');
+    fclose($f2);
+    $f2 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
+    while(!feof($f2)){
+        $line = fgets($f2, 1024);
+        if(!empty($line)){
+            $wasorno_3 = false;
+            $line = json_decode($line, true);
+            $current_question[] = $line['current_question'];
+        }else{
+            if($wasorno_3){
+                return 1;
+            }
+        }
+    }
+    fclose($f2);
+    return (max($current_question) + 1);
+}
+
+function record($data, $user){
+    $massive = array();
+    if(!empty($data)){
+        $massive = array(
+            'current_question'=> current_question($user),
+            'answer'=> $data['exampleRadios'],
+        );
+        $f = fopen('q_a.txt', 'r');
+        while(!feof($f)){
+            $line = fgets($f, 2014);
+            if(!empty($line)){
+                $line = json_decode($line, true);
+                if($massive['current_question'] == $line['numberOfQuestion']){
+                    $massive['rightanswer'] = $line['rightanswer'];
+                    if($line['rightanswer'] == $massive['answer']){
+                        $massive['correct'] = 1;
+                    }else{
+                        $massive['correct'] = 0;
+                    }
+                }
+            }else{
+                fclose($f);
+                break;
+            }
+        }
+        fclose($f);
+        $u = fopen('users.txt', 'r');
+        while(!feof($u)){
+            $line = fgets($u, 1024);
+            if(!empty($line)){
+                $line = json_decode($line, true);
+                if($line['password'] == $user){
+                    $fio = $line['FIO'];
+                    $branch = $line['branch'];
+                    $pos = $line['position'];
+                    $subdivision = $line['subdivision'];
+                    $f3 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'a');
+                    fwrite($f3, json_encode($massive, JSON_UNESCAPED_UNICODE)."\n");
+                    fclose($f3);
+                }
+            }else{
+                break;
+            }
+        }
+        fclose($u);
+        header('location:?page=test&user='.$data['password']);
+    };
+
+}
+
+function question($number){
+    $f = fopen('q_a.txt', 'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['numberOfQuestion'] == $number){
+                fclose($f);
+                return $line['question'];
+            }
+        }else{
+            fclose($f);
+            break;
+        }
+    }
+}
+
+function user_ansewr_1($number){
+    $f = fopen('q_a.txt', 'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['numberOfQuestion'] == $number){
+                return $line['answer_1'];
+            }
+        }else{
+            break;
+        }
+    }
+}
+
+function user_ansewr_2($number){
+    $f = fopen('q_a.txt', 'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['numberOfQuestion'] == $number){
+                return $line['answer_2'];
+            }
+        }else{
+            break;
+        }
+    }
+}
+
+function user_ansewr_3($number){
+    $f = fopen('q_a.txt', 'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['numberOfQuestion'] == $number){
+                return $line['answer_3'];
+            }
+        }else{
+            break;
+        }
+    }
+}
+function user_ansewr_4($number){
+    $f = fopen('q_a.txt', 'r');
+    while(!feof($f)){
+        $line = fgets($f, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['numberOfQuestion'] == $number){
+                return $line['answer_4'];
+            }
+        }else{
+            break;
+        }
+    }
+}
+
+function question_count(){
+    $count = 0;
+    $f4 = fopen('q_a.txt', 'r');
+    while(!feof($f4)){
+        $line = fgets($f4, 1024);
+        if(!empty($line)){
+            $count++;
+        }else{
+            break;
+        }
+    }
+    fclose($f4);
+    return $count;
+}
+
+function init_done($user){
+    $fio = '';
+    $branch = '';
+    $pos = '';
+    $subdivision = '';
+    $test_time = '';
+    $user_errors = 0;
+    //$flag = true;
+    $u = fopen('users.txt', 'r');
+    while(!feof($u)){
+        $line = fgets($u, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['password'] == $user){
+                $fio = $line['FIO'];
+                $branch = $line['branch'];
+                $pos = $line['position'];
+                $subdivision = $line['subdivision'];
+                $f3 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
+                while(!feof($f3)){
+                    $line_2 = fgets($f3, 1024);
+                    if(!empty($line_2)){
+                        $line_2 = json_decode($line_2, true);
+                        $user_errors += $line_2['correct'];
+                    }else{
+                        break;
+                    }
+                }
+                fclose($f3);
+            }
+        }else{
+            break;
+        }
+    }
+    fclose($u);
+    $f6 = fopen('used_passwords.txt', 'r');
+    while(!feof($f6)){
+        $line = fgets($f6, 1024);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if(array_keys($line)[0] == $user){
+                $test_time = date("Y:m:d H:i:s", strtotime('+30 minutes', strtotime($line[$user])));
+            }
+        }else{
+            break;
+        }
+    }
+    fclose($f6);
+
+
+    echo '<main class="baseWidth_3">
+
+    <div class="row">
+        <div class="col-3">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
+                    '.$fio.'<br>
+                    '.$pos.'<br>
+                    '.$subdivision.'<br>
+                    '.$branch.'<br>
+                    <hr>
+                </a>
+            </div>
+
+        </div>
+        <div class="col-9">
+            <div class="result">
+                <div class="date"> Время завершения теста: '.$test_time.'</div>
+                <div class="rating">Допущено ошибок: '.(question_count() - $user_errors).'</div>
+            </div>
+        </div>
+    </div>
+</main>';
+
+}
+
+function qa_init($user){
+    $question_count = question_count();
+    $current_question = current_question($user);
+    $question = question($current_question);
+    $user_ansewr_1 = user_ansewr_1($current_question);
+    $user_ansewr_2 = user_ansewr_2($current_question);
+    $user_ansewr_3 = user_ansewr_3($current_question);
+    $user_ansewr_4 = user_ansewr_4($current_question);
+    record($_POST, $user);
+
+    if($question_count >= $current_question){
+        if(is_time_over($user)){
+            echo '<main class="baseWidth_2">
+    <form class="protoWidth_2" method="post">
+        <div class="mainFormLegend">Тестирование Управления геологии, испытания и КРС</div>
+        <div class="numberOfQuestion">Вопрос №'.$current_question.'</div>
+        <div class="question">'.$question.'</div>
+        <div class="form-check answer">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="1" checked>
+            <label class="form-check-label" for="exampleRadios3">
+                '.$user_ansewr_1.'
+            </label>
+        </div>
+        <div class="form-check answer">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios4" value="2" checked>
+            <label class="form-check-label" for="exampleRadios4">
+                '.$user_ansewr_2.'
+            </label>
+        </div>
+        <div class="form-check answer">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios5" value="3" checked>
+            <label class="form-check-label" for="exampleRadios5">
+                '.$user_ansewr_3.'
+            </label>
+        </div>
+        <div class="form-check answer">
+            <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios6" value="4" checked>
+            <label class="form-check-label" for="exampleRadios6">
+                '.$user_ansewr_4.'
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary startButton" name="password" value='.$_GET['user'].'>Ответить</button>
+    </form>
+
+</main>';
+        }else{
+            echo 'Время прохождения теста истекло';
+        }
+    }else{
+        header('location:?page=result&user='.$user);
     }
 }

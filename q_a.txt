@@ -1,0 +1,4 @@
+{"numberOfQuestion":"4","question":"Вопрос 4","answer_1":"Ответ 1","answer_2":"Ответ 2","answer_3":"Ответ 3","answer_4":"Ответ 4","rightanswer":"1"}
+{"numberOfQuestion":"3","question":"Вопрос 3","answer_1":"Ответ 1","answer_2":"Ответ 2","answer_3":"Ответ 3","answer_4":"Ответ 4","rightanswer":"4"}
+{"numberOfQuestion":"2","question":"Вопрос 2","answer_1":"Ответ 1","answer_2":"Ответ 2","answer_3":"Ответ 3","answer_4":"Ответ 4","rightanswer":"3"}
+{"numberOfQuestion":"1","question":"Вопрос 1","answer_1":"Ответ 1","answer_2":"Ответ 2","answer_3":"Ответ 3","answer_4":"Ответ 4","rightanswer":"2"}
