@@ -15,48 +15,75 @@ function formDataValidation($data){
 }
 
 function checkForm(){
-    $errors = array();
-    if(!empty($_POST)){
-        $data = $_POST;
-        $mustHave_testable = array(
-            'FIO'=> 'Введите Ф.И.О.',
-            'position' => 'укажите должность',
-            'subDivision' => 'укажите подразделение',
-            'branch' => 'укажите филилал',
-            'password'=> 'укажите пароль');
-        $mustHave_other = array(
-            'FIO'=> 'Введите Ф.И.О.',
-            'password'=> 'укажите пароль');
+    if(empty($_GET['user'])){
+        $errors = array();
+        if(!empty($_POST)){
+            $data = $_POST;
+            $mustHave_testable = array(
+                'FIO'=> 'Введите Ф.И.О.',
+                'position' => 'укажите должность',
+                'subDivision' => 'укажите подразделение',
+                'branch' => 'укажите филилал',
+                'password'=> 'укажите пароль');
+            $mustHave_other = array(
+                'FIO'=> 'Введите Ф.И.О.',
+                'password'=> 'укажите пароль');
 
-        if(empty($data['exampleRadios'])){
-            $data['exampleRadios'] = 'testable';
-        }
-        if($data['exampleRadios'] == 'admin' || $data['exampleRadios'] == 'developer'){
-            foreach($mustHave_testable as $key=>$value){
-                if(!in_array($key, $data) && empty($data[$key])){
+            if(empty($data['exampleRadios'])){
+                $data['exampleRadios'] = 'testable';
+            }
+            if($data['exampleRadios'] == 'admin' || $data['exampleRadios'] == 'developer'){
+                foreach($mustHave_other as $key=>$value){
+                    if(!in_array($key, $data) && empty($data[$key])){
 
-                    $errors[] = $mustHave_testable[$key];
+                        $errors[] = $mustHave_testable[$key];
+                    }
                 }
+            }else{
+                foreach($mustHave_testable as $key=>$value){
+                    if(!in_array($key, $data) && empty($data[$key])){
+                        $errors[] = $mustHave_testable[$key];
+
+                    }
+                }
+            }
+            if (empty($errors)&& $data['exampleRadios'] == 'testable'){
+                $start_error = startOfTest($data);
+                if(!empty($start_error)){
+                    $errors[] = $start_error;
+                }
+
+            }elseif($data['exampleRadios'] == 'admin' && check_admin_password($data['password'])){
+                header('location:?page=test&user='.$data['password']);
+            }
+        }
+        echo implode('; ', $errors);
+        return $errors;
+    }
+}
+
+function check_admin_password($admin_password){
+    $f8 = fopen('admin_passwords.txt', 'r');
+    while(!feof($f8)){
+        $line = fgets($f8, 1024);
+        if(!empty($line)){
+            if(formDataValidation($admin_password) == formDataValidation($line)){
+                return true;
+            }else{
+                return false;
             }
         }else{
-            foreach($mustHave_other as $key=>$value){
-                if(!in_array($key, $data) && empty($data[$key])){
-                    $errors[] = $mustHave_testable[$key];
-
-                }
-            }
-        }
-        if (empty($errors)){
-            $start_error = startOfTest($data);
-            if(!empty($start_error)){
-                $errors[] = $start_error;
-            }
-
+            break;
         }
     }
-    echo implode('; ', $errors);
-    return $errors;
+    fclose($f8);
+    return false;
 }
+
+function init_admin(){
+
+}
+
 function errors_output(){
     $errors = checkForm();
     if(!empty($errors)){
@@ -128,7 +155,6 @@ function init() {
     }else{
         $page = $_GET['page'];
     };
-    include 'header.php';
     include $page.'.php';
     include 'footer.php';
 }
@@ -306,7 +332,7 @@ function record($data, $user){
                 break;
             }
         }
-        fclose($f);
+        //fclose($f);
         $u = fopen('users.txt', 'r');
         while(!feof($u)){
             $line = fgets($u, 1024);
@@ -326,7 +352,8 @@ function record($data, $user){
             }
         }
         fclose($u);
-        header('location:?page=test&user='.$data['password']);
+        $hir = 'location:?page=test&user='.formDataValidation($data['password']);
+        header($hir);
     };
 
 }
@@ -472,7 +499,18 @@ function init_done($user){
     fclose($f6);
 
 
-    echo '<main class="baseWidth_3">
+    echo '<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" media="screen" href="style.css">
+</head>
+<body><main class="baseWidth_3">
 
     <div class="row">
         <div class="col-3">
@@ -510,7 +548,18 @@ function qa_init($user){
 
     if($question_count >= $current_question){
         if(is_time_over($user)){
-            echo '<main class="baseWidth_2">
+            echo '<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" media="screen" href="style.css">
+</head>
+<body><main class="baseWidth_2">
     <form class="protoWidth_2" method="post">
         <div class="mainFormLegend">Тестирование Управления геологии, испытания и КРС</div>
         <div class="numberOfQuestion">Вопрос №'.$current_question.'</div>
@@ -548,6 +597,7 @@ function qa_init($user){
             echo 'Время прохождения теста истекло';
         }
     }else{
-        header('location:?page=result&user='.$user);
+        $hir2 = formDataValidation($user);
+        header('location:?page=result&user='.$hir2);
     }
 }
