@@ -669,7 +669,6 @@ function init_done($user, $time){
         </div>
     </div>
 </main>';
-
 }
 
 function myRandom($min, $max, $exception){
@@ -746,7 +745,6 @@ function wasQuestions($user) {
     return $wasQuestions;
 }
 
-
 function qa_init($user){
     $mustHaveQuestions = [
         'Drill' => 5,
@@ -756,26 +754,10 @@ function qa_init($user){
         'Purchase' => 5,
         'wellTest' => 5
     ];
-
     $timeout = false;
     $allQquestion_count = question_count();
     $question_count = array_sum($mustHaveQuestions);
     $current_question = current_question($user);
-    /*$valuePairs = value_pairs();
-    $wasQuestions = wasQuestions($user);
-    //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
-    $selectedQuestion = selectionQuestion($mustHaveQuestions, $valuePairs, $wasQuestions);
-    //echo '<br>';
-    //echo '<hr>';
-    //echo $selectedQuestion.'<br>';
-    $question = question($selectedQuestion);
-    $user_ansewr_1 = user_ansewr_1($selectedQuestion);
-    $user_ansewr_2 = user_ansewr_2($selectedQuestion);
-    $user_ansewr_3 = user_ansewr_3($selectedQuestion);
-    $user_ansewr_4 = user_ansewr_4($selectedQuestion);
-    $questionSection = questionSection($selectedQuestion);
-    record($_POST, $user);*/
-
     if($question_count >= $current_question){
         if(is_time_over($user)){
             $valuePairs = value_pairs();
@@ -803,17 +785,11 @@ function qa_init($user){
                 $auxiliary = fopen($recordFile, 'w');
                 fwrite($auxiliary, $current_question);
                 fclose($auxiliary);
-                print_r($wasQuestions['questionsNumbers']);
-                echo $selectedQuestion.'переход';
             }else{
                 $auxiliary_2 = fopen($recordFile_2, 'r');
                 $selectedQuestion = fgets($auxiliary_2, 1024);
                 fclose($auxiliary_2);
-                echo $selectedQuestion.'обновление';
             }
-
-            //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
-
             $question = question($selectedQuestion);
             $user_ansewr_1 = user_ansewr_1($selectedQuestion);
             $user_ansewr_2 = user_ansewr_2($selectedQuestion);
