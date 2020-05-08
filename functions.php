@@ -5,6 +5,9 @@
  * Date: 05.04.2020
  * Time: 15:03
  */
+
+date_default_timezone_set ( 'Europe/Moscow' );
+
 function formDataValidation($data){
     $data = stripcslashes($data);
     $data = strip_tags($data);
@@ -22,7 +25,7 @@ function checkForm(){
             $mustHave_testable = array(
                 'FIO'=> 'Введите Ф.И.О.',
                 'position' => 'укажите должность',
-                'subDivision' => 'укажите подразделение',
+                'subdivision' => 'укажите подразделение',
                 'branch' => 'укажите филилал',
                 'password'=> 'укажите пароль');
             $mustHave_other = array(
@@ -36,7 +39,7 @@ function checkForm(){
                 foreach($mustHave_other as $key=>$value){
                     if(!in_array($key, $data) && empty($data[$key])){
 
-                        $errors[] = $mustHave_testable[$key];
+                        $errors[] = $mustHave_other[$key];
                     }
                 }
             }else{
@@ -52,9 +55,10 @@ function checkForm(){
                 if(!empty($start_error)){
                     $errors[] = $start_error;
                 }
-
             }elseif($data['exampleRadios'] == 'admin' && check_admin_password($data['password'])){
-                header('location:?page=test&user='.$data['password']);
+                header('location:?page=admin&user='.$data['password']);
+            }elseif($data['exampleRadios'] == 'developer' && devPass($data['password'])){
+                header('location:?page=redact_test&user='.$data['password']);
             }
         }
         echo implode('; ', $errors);
@@ -62,15 +66,29 @@ function checkForm(){
     }
 }
 
+function devPass($password){
+    $f9 = fopen('developer_passwords.txt', 'r');
+    while(!feof($f9)){
+        $line = fgets($f9, 1600);
+        if(!empty($line)){
+            if(formDataValidation($line) == formDataValidation($password)){
+                return true;
+            }
+        }else{
+            return false;
+        }
+    }
+    fclose($f9);
+    return false;
+}
+
 function check_admin_password($admin_password){
     $f8 = fopen('admin_passwords.txt', 'r');
     while(!feof($f8)){
-        $line = fgets($f8, 1024);
+        $line = fgets($f8, 1600);
         if(!empty($line)){
             if(formDataValidation($admin_password) == formDataValidation($line)){
                 return true;
-            }else{
-                return false;
             }
         }else{
             break;
@@ -81,7 +99,72 @@ function check_admin_password($admin_password){
 }
 
 function init_admin(){
+    $markup = '<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
 
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" media="screen" href="style.css">
+</head>';
+    $u = fopen('users.txt', 'r');
+    while(!feof($u)){
+        $questionCount_2 = 0;
+        $line = fgets($u, 1600);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            $fio = $line['FIO'];
+            $branch = $line['branch'];
+            $pos = $line['position'];
+            $subdivision = $line['subdivision'];
+            $user_errors = 0;
+            $fileName = 'users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt';
+            $fileName = formDataValidation(translit_my($fileName));
+            $test_time = date('d.m.Y H:i:s', filemtime($fileName));
+            $f3 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
+            while(!feof($f3)){
+                $line_2 = fgets($f3, 1600);
+                if(!empty($line_2)){
+                    $questionCount_2++;
+                    $line_2 = json_decode($line_2, true);
+                    $user_errors += $line_2['correct'];
+                }else{
+                    break;
+                }
+            }
+            fclose($f3);
+        }else{
+            break;
+        }
+        $markup .= '<body><main class="baseWidth_3">
+        <div class="row">
+            <div class="col-3">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
+                        '.$fio.'<br>
+                        '.$pos.'<br>
+                        '.$subdivision.'<br>
+                        '.$branch.'<br>
+                        <hr>
+                    </a>
+                </div>
+    
+            </div>
+            <div class="col-9">
+                <div class="result">
+                    <div class="date"> Время завершения теста: '.$test_time.'</div>
+                    <div class="rating">Количество ответов: '.($questionCount_2).'</div>
+                    <div class="rating">Допущено ошибок: '.($questionCount_2 - $user_errors).'</div>
+                </div>
+            </div>
+        </div>
+    </main>';
+    }
+    fclose($u);
+    echo $markup;
 }
 
 function errors_output(){
@@ -103,7 +186,7 @@ function startOfTest($data){
     $checkPassword = false;
     $openPasssword = fopen('passwords.txt', 'r');
     while(!feof($openPasssword)){
-        $line = fgets($openPasssword, 1024);
+        $line = fgets($openPasssword, 1600);
         $line = formDataValidation($line);
         if($line == $data['password']){
             $checkPassword = true;
@@ -116,7 +199,7 @@ function startOfTest($data){
     $openUsedPasssword = fopen('used_passwords.txt', 'r');
     if($checkPassword){
         while(!feof($openUsedPasssword)){
-            $line = fgets($openUsedPasssword, 1024);
+            $line = fgets($openUsedPasssword, 1600);
             //$line = formDataValidation($line);
             if(empty($line)){
                 $input = array($data['password']=>date("Y:m:d H:i:s"));
@@ -131,7 +214,7 @@ function startOfTest($data){
             }else{
                 $line = json_decode($line, true);
                 if($data['password'] == array_keys($line)[0]){
-                    if((strtotime('+30 minutes', strtotime($line[$data['password']]))) > (strtotime(date("Y:m:d H:i:s")))){
+                    if((strtotime('+60 minutes', strtotime($line[$data['password']]))) > (strtotime(date("Y:m:d H:i:s")))){
                         $checkUsedPassword = true;
                         fclose($openUsedPasssword);
                         break;
@@ -171,7 +254,8 @@ function set_QA()
             'answer_2' => $data['answer_2'],
             'answer_3' => $data['answer_3'],
             'answer_4' => $data['answer_4'],
-            'rightanswer' => $data['rightanswer']
+            'rightanswer' => $data['rightanswer'],
+            'section' => $data['section']
         );
         $wasorno = false;
         $wasorno_2 = false;
@@ -179,7 +263,7 @@ function set_QA()
         $newline = array();
         $q_a = fopen('q_a.txt', 'r');
         while (!feof($q_a)) {
-            $line = fgets($q_a, 1024);
+            $line = fgets($q_a, 1600);
             if (!empty($line)) {
                 $wasorno = true;
                 $oldline = $line;
@@ -232,22 +316,25 @@ function start_time($password){
     $password_1 = formDataValidation($password);
     $f = fopen('used_passwords.txt' ,'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if(array_keys($line)[0] == $password_1){
                 $time = $line[$password_1];
+                fclose($f);
+                return $time;
             }
         }else{
-            $time =date("Y:m:d H:i:s");
+            $time = date("Y:m:d H:i:s");
             break;
         }
     }
     fclose($f);
     return $time;
 }
+
 function end_time($password) {
-    return strtotime('+30 minutes', strtotime(start_time($password)));
+    return strtotime('+60 minutes', strtotime(start_time($password)));
 }
 
 function is_time_over($password){
@@ -265,6 +352,30 @@ function translit_my($data){
     return $data;
 }
 
+function usersFileName($user){
+    $fio = '';
+    $branch = '';
+    $pos = '';
+    $subdivision = '';
+    $f1 = fopen('users.txt', 'r');
+    while(!feof($f1)){
+        $line = fgets($f1, 1600);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($line['password'] == $user){
+                $fio = $line['FIO'];
+                $branch = $line['branch'];
+                $pos = $line['position'];
+                $subdivision = $line['subdivision'];
+            }
+        }else{
+            break;
+        }
+    }
+    $usersFileName = formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt'));
+    return $usersFileName;
+};
+
 function current_question($user){
     $current_question = array();
     $fio = '';
@@ -273,7 +384,7 @@ function current_question($user){
     $subdivision = '';
     $f1 = fopen('users.txt', 'r');
     while(!feof($f1)){
-        $line = fgets($f1, 1024);
+        $line = fgets($f1, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['password'] == $user){
@@ -292,7 +403,7 @@ function current_question($user){
     fclose($f2);
     $f2 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
     while(!feof($f2)){
-        $line = fgets($f2, 1024);
+        $line = fgets($f2, 1600);
         if(!empty($line)){
             $wasorno_3 = false;
             $line = json_decode($line, true);
@@ -312,14 +423,16 @@ function record($data, $user){
     if(!empty($data)){
         $massive = array(
             'current_question'=> current_question($user),
+            'numberOfQuestion' => $data['numberOfQuestion'],
             'answer'=> $data['exampleRadios'],
+            'password'=> $user
         );
         $f = fopen('q_a.txt', 'r');
         while(!feof($f)){
             $line = fgets($f, 2014);
             if(!empty($line)){
                 $line = json_decode($line, true);
-                if($massive['current_question'] == $line['numberOfQuestion']){
+                if($massive['numberOfQuestion'] == $line['numberOfQuestion']){
                     $massive['rightanswer'] = $line['rightanswer'];
                     if($line['rightanswer'] == $massive['answer']){
                         $massive['correct'] = 1;
@@ -332,10 +445,11 @@ function record($data, $user){
                 break;
             }
         }
+        $massive['section'] = $data['section'];
         //fclose($f);
         $u = fopen('users.txt', 'r');
         while(!feof($u)){
-            $line = fgets($u, 1024);
+            $line = fgets($u, 1600);
             if(!empty($line)){
                 $line = json_decode($line, true);
                 if($line['password'] == $user){
@@ -361,7 +475,7 @@ function record($data, $user){
 function question($number){
     $f = fopen('q_a.txt', 'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['numberOfQuestion'] == $number){
@@ -378,7 +492,7 @@ function question($number){
 function user_ansewr_1($number){
     $f = fopen('q_a.txt', 'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['numberOfQuestion'] == $number){
@@ -393,7 +507,7 @@ function user_ansewr_1($number){
 function user_ansewr_2($number){
     $f = fopen('q_a.txt', 'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['numberOfQuestion'] == $number){
@@ -408,7 +522,7 @@ function user_ansewr_2($number){
 function user_ansewr_3($number){
     $f = fopen('q_a.txt', 'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['numberOfQuestion'] == $number){
@@ -422,7 +536,7 @@ function user_ansewr_3($number){
 function user_ansewr_4($number){
     $f = fopen('q_a.txt', 'r');
     while(!feof($f)){
-        $line = fgets($f, 1024);
+        $line = fgets($f, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['numberOfQuestion'] == $number){
@@ -434,11 +548,27 @@ function user_ansewr_4($number){
     }
 }
 
+function questionSection($number){
+    $file_12 = fopen('q_a.txt', 'r');
+    while(!feof($file_12)){
+        $line = fgets($file_12, 1600);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            if($number == $line['numberOfQuestion']){
+                return $line['section'];
+            }
+        }else{
+            fclose($file_12);
+            break;
+        }
+    }
+}
+
 function question_count(){
     $count = 0;
     $f4 = fopen('q_a.txt', 'r');
     while(!feof($f4)){
-        $line = fgets($f4, 1024);
+        $line = fgets($f4, 1900);
         if(!empty($line)){
             $count++;
         }else{
@@ -449,17 +579,18 @@ function question_count(){
     return $count;
 }
 
-function init_done($user){
+function init_done($user, $time){
     $fio = '';
     $branch = '';
     $pos = '';
     $subdivision = '';
     $test_time = '';
     $user_errors = 0;
+    $countQuestions = 0;
     //$flag = true;
     $u = fopen('users.txt', 'r');
     while(!feof($u)){
-        $line = fgets($u, 1024);
+        $line = fgets($u, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if($line['password'] == $user){
@@ -469,8 +600,9 @@ function init_done($user){
                 $subdivision = $line['subdivision'];
                 $f3 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
                 while(!feof($f3)){
-                    $line_2 = fgets($f3, 1024);
+                    $line_2 = fgets($f3, 1600);
                     if(!empty($line_2)){
+                        $countQuestions++;
                         $line_2 = json_decode($line_2, true);
                         $user_errors += $line_2['correct'];
                     }else{
@@ -486,18 +618,21 @@ function init_done($user){
     fclose($u);
     $f6 = fopen('used_passwords.txt', 'r');
     while(!feof($f6)){
-        $line = fgets($f6, 1024);
+        $line = fgets($f6, 1600);
         if(!empty($line)){
             $line = json_decode($line, true);
             if(array_keys($line)[0] == $user){
-                $test_time = date("Y:m:d H:i:s", strtotime('+30 minutes', strtotime($line[$user])));
+                $test_time = date("d.m.Y H:i:s", strtotime('+60 minutes', strtotime($line[$user])));
             }
         }else{
             break;
         }
     }
     fclose($f6);
-
+    $inform = '';
+    if($time){
+        $inform = '<div class="timeMessage"><strong>Время прохождения теста истекло</strong></strong></div>';
+    }
 
     echo '<!doctype html>
 <html lang="en">
@@ -511,7 +646,7 @@ function init_done($user){
     <link rel="stylesheet" media="screen" href="style.css">
 </head>
 <body><main class="baseWidth_3">
-
+    '.$inform.'
     <div class="row">
         <div class="col-3">
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
@@ -528,7 +663,8 @@ function init_done($user){
         <div class="col-9">
             <div class="result">
                 <div class="date"> Время завершения теста: '.$test_time.'</div>
-                <div class="rating">Допущено ошибок: '.(question_count() - $user_errors).'</div>
+                <div class="rating">Количество ответов: '.($countQuestions).'</div>
+                <div class="rating">Допущено ошибок: '.($countQuestions - $user_errors).'</div>
             </div>
         </div>
     </div>
@@ -536,18 +672,126 @@ function init_done($user){
 
 }
 
+function myRandom($min, $max, $exception){
+    $digit = rand($min, $max);
+    if(!empty($exception)){
+        foreach ($exception as $key => $value) {
+            if($digit != $value){
+            }else{
+                myRandom($min, $max, $exception);
+            }
+        }
+        return $digit;
+    }else{
+        return rand($min, $max);
+    }
+}
+
+function value_pairs(){
+    $value_pairs = [];
+    $file_11 = fopen('q_a.txt', 'r');
+    while(!feof($file_11)){
+        $line = fgets($file_11, 1600);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            $value_pairs[$line['numberOfQuestion']] = $line['section'];
+        }else{
+            break;
+        }
+    }
+    return $value_pairs;
+}
+
+function selectionQuestion($mustHaveQuestions, $value_pairs, $wasQuestion){
+    $massive = array();
+    foreach ($value_pairs as $key=>$value){
+        if(!in_array($key, $wasQuestion['questionsNumbers'])){
+            if($wasQuestion[$value] < $mustHaveQuestions[$value]){
+                $massive[] = $key;
+            }
+        }
+    }
+    //print_r($wasQuestion);
+    return $massive[array_rand($massive)];
+};
+
+function wasQuestions($user) {
+    $fileName = usersFileName($user);
+    //echo $fileName.'<br>';
+    $wasQuestions = [
+        'questionsNumbers' => array(),
+        'Drill' => 0,
+        'doc' => 0,
+        'geology' => 0,
+        'GIS' => 0,
+        'Purchase' => 0,
+        'wellTest' => 0
+    ];
+    $openFile = fopen($fileName, 'r');
+    while(!feof($openFile)){
+        $line = fgets($openFile, 1600);
+        if(!empty($line)){
+            $line = json_decode($line, true);
+            foreach ($wasQuestions as $key=>$value){
+                if($line['section'] == $key){
+                    $wasQuestions[$key] += 1;
+                    $wasQuestions['questionsNumbers'][] = $line['numberOfQuestion'];
+                }
+            }
+        }else{
+            fclose($openFile);
+            break;
+        }
+    }
+    return $wasQuestions;
+}
+
+
 function qa_init($user){
-    $question_count = question_count();
+    $mustHaveQuestions = [
+        'Drill' => 5,
+        'doc' => 5,
+        'geology' => 5,
+        'GIS' => 5,
+        'Purchase' => 5,
+        'wellTest' => 5
+    ];
+
+    $timeout = false;
+    $allQquestion_count = question_count();
+    $question_count = array_sum($mustHaveQuestions);
     $current_question = current_question($user);
-    $question = question($current_question);
-    $user_ansewr_1 = user_ansewr_1($current_question);
-    $user_ansewr_2 = user_ansewr_2($current_question);
-    $user_ansewr_3 = user_ansewr_3($current_question);
-    $user_ansewr_4 = user_ansewr_4($current_question);
-    record($_POST, $user);
+    /*$valuePairs = value_pairs();
+    $wasQuestions = wasQuestions($user);
+    //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
+    $selectedQuestion = selectionQuestion($mustHaveQuestions, $valuePairs, $wasQuestions);
+    //echo '<br>';
+    //echo '<hr>';
+    //echo $selectedQuestion.'<br>';
+    $question = question($selectedQuestion);
+    $user_ansewr_1 = user_ansewr_1($selectedQuestion);
+    $user_ansewr_2 = user_ansewr_2($selectedQuestion);
+    $user_ansewr_3 = user_ansewr_3($selectedQuestion);
+    $user_ansewr_4 = user_ansewr_4($selectedQuestion);
+    $questionSection = questionSection($selectedQuestion);
+    record($_POST, $user);*/
 
     if($question_count >= $current_question){
         if(is_time_over($user)){
+            $valuePairs = value_pairs();
+            $wasQuestions = wasQuestions($user);
+            //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
+            $selectedQuestion = selectionQuestion($mustHaveQuestions, $valuePairs, $wasQuestions);
+            //echo '<br>';
+            //echo '<hr>';
+            //echo $selectedQuestion.'<br>';
+            $question = question($selectedQuestion);
+            $user_ansewr_1 = user_ansewr_1($selectedQuestion);
+            $user_ansewr_2 = user_ansewr_2($selectedQuestion);
+            $user_ansewr_3 = user_ansewr_3($selectedQuestion);
+            $user_ansewr_4 = user_ansewr_4($selectedQuestion);
+            $questionSection = questionSection($selectedQuestion);
+            record($_POST, $user);
             echo '<!doctype html>
 <html lang="en">
 <head>
@@ -588,16 +832,19 @@ function qa_init($user){
                 '.$user_ansewr_4.'
             </label>
         </div>
-
+        <input type="hidden" name="section" value='.$questionSection.'>
+        <input type="hidden" name="numberOfQuestion" value='.$selectedQuestion.'>
         <button type="submit" class="btn btn-primary startButton" name="password" value='.$_GET['user'].'>Ответить</button>
     </form>
 
 </main>';
         }else{
-            echo 'Время прохождения теста истекло';
+            $hir2 = formDataValidation($user);
+            $timeout = true;
+            header('location:?page=result&user='.$hir2.'&timeout='.$timeout);
         }
     }else{
         $hir2 = formDataValidation($user);
-        header('location:?page=result&user='.$hir2);
+        header('location:?page=result&user='.$hir2.'&timeout='.$timeout);
     }
 }

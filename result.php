@@ -1,2 +1,2 @@
 <?php
- init_done($_GET['user']);
+ init_done($_GET['user'], $_GET['timeout']);

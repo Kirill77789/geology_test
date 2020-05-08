@@ -14,25 +14,25 @@
         <div class="mainFormLegend">Тестирование Управления геологии, испытания и КРС</div>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="testable" checked>
-            <label class="form-check-label" for="exampleRadios1">
+            <label class=" face" for="exampleRadios1">
                 Пройти тест
             </label>
         </div>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="admin">
-            <label class="form-check-label" for="exampleRadios2">
+            <label class=" face" for="exampleRadios2">
                 Администратор
             </label>
         </div>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="developer">
-            <label class="form-check-label" for="exampleRadios3">
+            <label class=" face" for="exampleRadios3">
                 Разработчик
             </label>
         </div>
         <div class="form-group">
             <label for="formGroupExampleInput">Фамилия Имя Отчество:</label>
-            <input type="text" class="form-control" id="formGroupExampleInput" name="FIO"  placeholder="Зубенко Михаил Петрович">
+            <input type="text" class="form-control" id="formGroupExampleInput" name="FIO"  placeholder="Иванов Иван Иванович">
         </div>
         <div class="form-group">
             <label for="formGroupExampleInput_2">Должность:</label>
