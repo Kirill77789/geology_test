@@ -8,4 +8,3 @@
 require 'functions.php';
 errors_output();
 init();
-print_r(urldecode($_POST));

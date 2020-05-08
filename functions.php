@@ -780,11 +780,40 @@ function qa_init($user){
         if(is_time_over($user)){
             $valuePairs = value_pairs();
             $wasQuestions = wasQuestions($user);
-            //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
+            $recordFile = 'auxiliary/'.usersFileName($user);
+            $recordFile_2 = '2_'.$recordFile;
+            $recordNumber = 0;
             $selectedQuestion = selectionQuestion($mustHaveQuestions, $valuePairs, $wasQuestions);
-            //echo '<br>';
-            //echo '<hr>';
-            //echo $selectedQuestion.'<br>';
+            if(!file_exists($recordFile)){
+                $auxiliary = fopen($recordFile, 'a');
+                fwrite($auxiliary, $recordNumber+1);
+                fclose($auxiliary);
+                $auxiliary_2 = fopen($recordFile_2, 'a');
+                fwrite($auxiliary_2, $selectedQuestion);
+                fclose($auxiliary_2);
+            }else{
+                $auxiliary = fopen($recordFile, 'r');
+                $recordNumber = fgets($auxiliary, 1024);
+                fclose($auxiliary);
+            }
+            if($recordNumber + 1 == $current_question){
+                $auxiliary_2 = fopen($recordFile_2, 'w');
+                fwrite($auxiliary_2, $selectedQuestion);
+                fclose($auxiliary_2);
+                $auxiliary = fopen($recordFile, 'w');
+                fwrite($auxiliary, $current_question);
+                fclose($auxiliary);
+                print_r($wasQuestions['questionsNumbers']);
+                echo $selectedQuestion.'переход';
+            }else{
+                $auxiliary_2 = fopen($recordFile_2, 'r');
+                $selectedQuestion = fgets($auxiliary_2, 1024);
+                fclose($auxiliary_2);
+                echo $selectedQuestion.'обновление';
+            }
+
+            //$unicQuestion = myRandom(1, $allQquestion_count, $wasQuestions['questionsNumbers']);
+
             $question = question($selectedQuestion);
             $user_ansewr_1 = user_ansewr_1($selectedQuestion);
             $user_ansewr_2 = user_ansewr_2($selectedQuestion);
