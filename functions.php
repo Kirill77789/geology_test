@@ -110,6 +110,7 @@ function init_admin(){
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="style.css">
 </head>';
+    $subMarkup = '';
     $u = fopen('users.txt', 'r');
     while(!feof($u)){
         $questionCount_2 = 0;
@@ -125,12 +126,101 @@ function init_admin(){
             $fileName = formDataValidation(translit_my($fileName));
             $test_time = date('d.m.Y H:i:s', filemtime($fileName));
             $f3 = fopen(formDataValidation(translit_my('users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt')), 'r');
+            $subMarkup = '';
             while(!feof($f3)){
                 $line_2 = fgets($f3, 1600);
                 if(!empty($line_2)){
                     $questionCount_2++;
                     $line_2 = json_decode($line_2, true);
                     $user_errors += $line_2['correct'];
+                    $prenumOfquestion =  $line_2['current_question'];
+                    $pretextOfquestion = $line_2['numberOfQuestion'];
+                    $preusersAnswer =    $line_2['answer'];
+                    $numOfquestion =  '';
+                    $textOfquestion = '';
+                    $usersAnswer =    '';
+                    $textOfAnswer_1 = '';
+                    $textOfAnswer_2 = '';
+                    $textOfAnswer_3 = '';
+                    $textOfAnswer_4 = '';
+                    $classWrite = 'classWrite';
+                    $classWrong = 'classWrong';
+                    $class_1 = '';
+                    $class_2 = '';
+                    $class_3 = '';
+                    $class_4 = '';
+
+                    if($line_2['correct'] == 0){
+                        switch($line_2['rightanswer']){
+                            case '1': $class_1 =  $classWrite;
+                                        break;
+                            case '2': $class_2 =  $classWrite;
+                                        break;
+                            case '3': $class_3 =  $classWrite;
+                                         break;
+                            case '4': $class_4 =  $classWrite;
+                                        break;
+                        }
+                          switch($line_2['answer']){
+                              case '1': $class_1 =  $classWrong;
+                                          break;
+                              case '2': $class_2 =  $classWrong;
+                                          break;
+                              case '3': $class_3 =  $classWrong;
+                                           break;
+                              case '4': $class_4 =  $classWrong;
+                                          break;
+                          }
+                    }else{
+                          switch($line_2['answer']){
+                              case '1': $class_1 =  'onlyWrite';
+                                          break;
+                              case '2': $class_2 = 'onlyWrite';
+                                          break;
+                              case '3': $class_3 =  'onlyWrite';
+                                           break;
+                              case '4': $class_4 =  'onlyWrite';
+                                          break;
+                          }
+                    };
+                    $f22 = fopen('q_a.txt', 'r');
+                    while(!feof($f22)){
+                         $line_22 =  fgets($f22, 1600);
+                         if(!empty($line_22)){
+                             $line_22 =    json_decode($line_22, true);
+                             if($pretextOfquestion == $line_22['numberOfQuestion']){
+                                $numOfquestion = $line_22['numberOfQuestion'];
+                                $textOfquestion = $line_22['question'];
+                                $textOfAnswer_1 = $line_22['answer_1'];
+                                $textOfAnswer_2 = $line_22['answer_2'];
+                                $textOfAnswer_3 = $line_22['answer_3'];
+                                $textOfAnswer_4 = $line_22['answer_4'];
+                                //break;
+                                $subMarkup .= '<main class="baseWidth_2">             
+                                     <div class="protoWidth_2" method="post">
+                                     <div class="justEmpty"></div>                              
+                                         <div class="numberOfQuestion tetxtCentr">Вопрос №'.$numOfquestion.'</div>    
+                                         <div class="question">'.$textOfquestion.'</div>                                                   
+                                             <div class="answerInAdm '.$class_1.'">                   
+                                                 '.$textOfAnswer_1.'                                       
+                                             </div>                                                                    
+                                             <div class="answerInAdm '.$class_2.'">                   
+                                                 '.$textOfAnswer_2.'                                       
+                                             </div>                              
+                                             <div class="answerInAdm '.$class_3.'">                   
+                                                 '.$textOfAnswer_3.'                                       
+                                             </div>                            
+                                             <div class="answerInAdm '.$class_4.'">                   
+                                                 '.$textOfAnswer_4.'                                       
+                                             </div>                                                     
+                                     </div>                                                                
+                                 </main>';
+                             };
+                         }else{
+                             break;
+                         }
+
+                    }   fclose($f22);
                 }else{
                     break;
                 }
@@ -140,28 +230,27 @@ function init_admin(){
             break;
         }
         $markup .= '<body><main class="baseWidth_3">
-        <div class="row">
-            <div class="col-3">
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                    <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
-                        '.$fio.'<br>
-                        '.$pos.'<br>
-                        '.$subdivision.'<br>
-                        '.$branch.'<br>
-                        <hr>
-                    </a>
-                </div>
-    
+        <div class="adm_row">
+            <div class="col-adm1">
+                '.$fio.'<br>
+                '.$pos.'<br>
+                '.$subdivision.'<br>
+                '.$branch.'<br>
             </div>
-            <div class="col-9">
+            <div class="col_adm2">
                 <div class="result">
                     <div class="date"> Время завершения теста: '.$test_time.'</div>
                     <div class="rating">Количество ответов: '.($questionCount_2).'</div>
                     <div class="rating">Допущено ошибок: '.($questionCount_2 - $user_errors).'</div>
+                    <button class="admbtn">ответы</button>
                 </div>
             </div>
         </div>
+        <div class="thisResult hide">
+            '.$subMarkup.'
+        </div>
     </main>';
+
     }
     fclose($u);
     echo $markup;
@@ -647,28 +736,23 @@ function init_done($user, $time){
 </head>
 <body><main class="baseWidth_3">
     '.$inform.'
-    <div class="row">
-        <div class="col-3">
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
-                    '.$fio.'<br>
-                    '.$pos.'<br>
-                    '.$subdivision.'<br>
-                    '.$branch.'<br>
-                    <hr>
-                </a>
+<div class="adm_row">
+            <div class="col-adm1">
+                '.$fio.'<br>
+                '.$pos.'<br>
+                '.$subdivision.'<br>
+                '.$branch.'<br>
             </div>
-
-        </div>
-        <div class="col-9">
-            <div class="result">
-                <div class="date"> Время завершения теста: '.$test_time.'</div>
-                <div class="rating">Количество ответов: '.($countQuestions).'</div>
-                <div class="rating">Допущено ошибок: '.($countQuestions - $user_errors).'</div>
+            <div class="col_adm2">
+                <div class="result">
+                    <div class="date"> Время завершения теста: '.$test_time.'</div>
+                    <div class="rating">Количество ответов: '.($countQuestions).'</div>
+                    <div class="rating">Допущено ошибок: '.($countQuestions - $user_errors).'</div>
+                </div>
             </div>
         </div>
-    </div>
-</main>';
+    </main>
+';
 }
 
 function myRandom($min, $max, $exception){
@@ -810,8 +894,8 @@ function qa_init($user){
 </head>
 <body><main class="baseWidth_2">
     <form class="protoWidth_2" method="post">
-        <div class="mainFormLegend">Тестирование Управления геологии, испытания и КРС</div>
-        <div class="numberOfQuestion">Вопрос №'.$current_question.'</div>
+        <div class="mainFormLegend">Тест Управления геологии, испытания и КРС</div>
+        <div class="numberOfQuestion tetxtCentr">Вопрос №'.$current_question.'</div>
         <div class="question">'.$question.'</div>
         <div class="form-check answer">
             <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios3" value="1" checked>
