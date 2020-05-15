@@ -32,7 +32,7 @@
         </div>
         <div class="form-group">
             <label for="formGroupExampleInput">Фамилия Имя Отчество:</label>
-            <input type="text" class="form-control" id="formGroupExampleInput" name="FIO"  placeholder="Иванов Иван Иванович">
+            <input type="text" class="form-control" id="formGroupExampleInput" name="FIO"  placeholder="Иванов 2 Иван Иванович">
         </div>
         <div class="form-group">
             <label for="formGroupExampleInput_2">Должность:</label>
