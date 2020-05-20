@@ -102,14 +102,25 @@ function init_admin(){
     $markup = '<!doctype html>
 <html lang="en">
 <head>
+    <title>Тест по Геологии</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
-
+    <link rel="icon" href="icon/geol.ico" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="style.css">
-</head>';
+</head>
+<main class="baseWidth_3">
+    <div class="branchs_buttons">
+        <button class="branch_btn all">Все</button>
+        <button class="branch_btn cau">ЦАУ</button>
+        <button class="branch_btn krb">ООО "Краснодар бурение"</button>
+        <button class="branch_btn orb">ООО "Оренбург бурение"</button>
+        <button class="branch_btn arb">ООО "Астрахань бурение</button>
+        <button class="branch_btn urb">ООО "Уренгой бурение"</button>
+    </div>
+</main>';
     $subMarkup = '';
     $u = fopen('users.txt', 'r');
     while(!feof($u)){
@@ -229,7 +240,7 @@ function init_admin(){
         }else{
             break;
         }
-        $markup .= '<body><main class="baseWidth_3">
+        $markup .= '<body><main class="baseWidth_3 forHide">
         <div class="adm_row">
             <div class="col-adm1">
                 '.$fio.'<br>
@@ -726,10 +737,11 @@ function init_done($user, $time){
     echo '<!doctype html>
 <html lang="en">
 <head>
+    <title>Тест по Геологии</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
-
+    <link rel="icon" href="icon/geol.ico" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="style.css">
@@ -874,6 +886,7 @@ function qa_init($user){
                 $selectedQuestion = fgets($auxiliary_2, 1024);
                 fclose($auxiliary_2);
             }
+            $endTime = end_time($user);
             $question = question($selectedQuestion);
             $user_ansewr_1 = user_ansewr_1($selectedQuestion);
             $user_ansewr_2 = user_ansewr_2($selectedQuestion);
@@ -884,10 +897,11 @@ function qa_init($user){
             echo '<!doctype html>
 <html lang="en">
 <head>
+    <title>Тест по Геологии</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
-
+    <link rel="icon" href="icon/geol.ico" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="style.css">
@@ -923,7 +937,17 @@ function qa_init($user){
         </div>
         <input type="hidden" name="section" value='.$questionSection.'>
         <input type="hidden" name="numberOfQuestion" value='.$selectedQuestion.'>
-        <button type="submit" class="btn btn-primary startButton" name="password" value='.$_GET['user'].'>Ответить</button>
+        <div class="forTime">
+            <button type="submit" class="btn btn-primary startButton" name="password" value='.$_GET['user'].'>Ответить</button>
+            <div id="timer">
+                <div class="time_question_1">
+                    <div class="hide hideTime" data-tmr="'.$endTime.'"></div>
+                    Время до завершения теста:&nbsp
+                    <i>минут:&nbsp </i><span id="minutes"></span>&nbsp<i>секунд:&nbsp </i><span id="seconds"></span>
+                </div>
+                <div class="time_question_2">Осталось вопросов: '.($question_count + 1 - $current_question).'</div>
+            </div>
+        </div>
     </form>
 
 </main>';

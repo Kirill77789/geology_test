@@ -1,17 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <title>Тест по Геологии</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
-
+    <link rel="icon" href="icon/geol.ico" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" media="screen" href="style.css">
 </head>
 <body><main class="baseWidth">
     <form class="protoWidth" method="post">
-        <div class="mainFormLegend">Тестирование Управления геологии, испытания и КРС</div>
+        <div class="mainFormLegend">Проведение проверки знаний специалистов служб главного геолога филиалов ООО "Газпром бурение"</div>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="testable" checked>
             <label class=" face" for="exampleRadios1">
