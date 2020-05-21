@@ -133,6 +133,12 @@ function init_admin(){
             $pos = $line['position'];
             $subdivision = $line['subdivision'];
             $user_errors = 0;
+            $drill_error = 0;
+            $geology_error = 0;
+            $gis_error = 0;
+            $wellTest_error = 0;
+            $purchase_error = 0;
+            $doc_error = 0;
             $fileName = 'users/'.$fio.'_'.$branch.'_'.$pos.'_'.$subdivision.'.txt';
             $fileName = formDataValidation(translit_my($fileName));
             $test_time = date('d.m.Y H:i:s', filemtime($fileName));
@@ -160,6 +166,22 @@ function init_admin(){
                     $class_2 = '';
                     $class_3 = '';
                     $class_4 = '';
+                    if($line_2['correct'] == 0){
+                        switch($line_2['section']){
+                            case 'Drill': $drill_error++;
+                                break;
+                            case 'geology': $geology_error++;
+                                break;
+                            case 'GIS': $gis_error++;
+                                break;
+                            case 'wellTest': $wellTest_error++;
+                                break;
+                            case 'Purchase': $purchase_error++;
+                                break;
+                            case 'doc': $doc_error++;
+                                break;
+                        }
+                    }
 
                     if($line_2['correct'] == 0){
                         switch($line_2['rightanswer']){
@@ -251,9 +273,31 @@ function init_admin(){
             <div class="col_adm2">
                 <div class="result">
                     <div class="date"> Время завершения теста: '.$test_time.'</div>
-                    <div class="rating">Количество ответов: '.($questionCount_2).'</div>
-                    <div class="rating">Допущено ошибок: '.($questionCount_2 - $user_errors).'</div>
-                    <button class="admbtn">ответы</button>
+                    <div class="answers_block">
+                    </div>
+                    
+                        <table>
+                            <tr>
+                                <td colspan="6">Всего ошибок: '.($questionCount_2 - $user_errors).'</td>
+                            </tr>
+                            <tr>
+                                <td>Бурение</td>
+                                <td>Геология</td>
+                                <td>ГИС</td>
+                                <td>Испытания</td>
+                                <td>Закупки</td>
+                                <td>Документация</td>
+                            </tr>
+                            <tr>
+                                <td>'.$drill_error.'</td>
+                                <td>'.$geology_error.'</td>
+                                <td>'.$gis_error.'</td>
+                                <td>'.$wellTest_error.'</td>
+                                <td>'.$purchase_error.'</td>
+                                <td>'.$doc_error.'</td>
+                            </tr>
+                        </table>
+                    <button class="admbtn">показать ответы</button>
                 </div>
             </div>
         </div>
